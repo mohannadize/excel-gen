@@ -1,4 +1,4 @@
-const cacheVersion = 4;
+const cacheVersion = "1.0.2";
 const cachePrefix = "excel-gen";
 const cacheStore = `${cachePrefix}-${cacheVersion}`;
 
@@ -6,28 +6,10 @@ self.addEventListener("install", () => self.skipWaiting());
 
 self.addEventListener("fetch", (e) => {
   e.respondWith(
-    caches
-      .match(e.request)
-      .then((res) => {
-        return fetch(e.request)
-          .then((netres) => {
-            return caches.open(cacheStore).then((x) => {
-              x.put(e.request.url, netres.clone());
-              return netres;
-            }) || res;
-          })
-          .catch(() => res);
-      })
-      .catch(() => {
-        return fetch(e.request).then((netres) => {
-          return caches.open(cacheStore).then((x) => {
-            x.put(e.request.url, netres.clone());
-            return netres;
-          });
-        });
-      })
+    fromNetwork(e.request, 10000).catch(() => fromCache(e.request))
   );
 });
+
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys().then(function (cacheNames) {
@@ -43,3 +25,25 @@ self.addEventListener("activate", (e) => {
     })
   );
 });
+
+// fetch the resource from the network
+const fromNetwork = (request, timeout) =>
+  new Promise((fulfill, reject) => {
+    const timeoutId = setTimeout(reject, timeout);
+    fetch(request).then((response) => {
+      clearTimeout(timeoutId);
+      !request.url.startsWith("chrome") && update(request, response.clone());
+      fulfill(response);
+    }, reject);
+  });
+
+// fetch the resource from the browser cache
+const fromCache = (request) =>
+  caches
+    .open(cacheStore)
+    .then((cache) => cache.match(request).then((matching) => matching));
+
+const update = (request, response) =>
+  caches.open(cacheStore).then((cache) => {
+    response && cache.put(request, response);
+  });
