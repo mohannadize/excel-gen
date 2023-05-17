@@ -25,3 +25,13 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+.swap.swap-active .swap-on,
+.swap:not(.swap-active) .swap-off {
+  pointer-events: all;
+}
+
+.swap.swap-active .swap-off,
+.swap:not(.swap-active) .swap-on {
+  pointer-events: none;
+}

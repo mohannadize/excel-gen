@@ -1,23 +1,22 @@
 "use client";
-import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   IconContext,
   Table as TableIcon,
+  ClipboardText as PasteIcon,
   Broom as ClearIcon,
 } from "@phosphor-icons/react";
 import ResultViewer from "./ResultViewer";
 
 const sample_text = `
-[12/05, 5:05 pm] D M Kamal: حسناء محمد صادق
-اصلاح لقطع بوتر العضلة الرافعة للذراع بواسطة ثلاثة خطاطيف 
-Double row
-د احمد الخطيب
-[12/05, 5:07 pm] D M Kamal: بسنت هشام عبد العزيز 
-( انثى الفيل )
-استعواض للرباط الصليبي الامامي للركبة و تهذيب لقطع بالغضروف الهلالي الداخلي 
-د احمد الخطيب
+[12/05, 5:05 pm] Contact Name: Patient Name
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Non adipisci nemo rem reiciendis optio omnis fuga, voluptate corrupti ex quibusdam?
+Doctor Name
 `;
+
+function isValidDateObject(date: Date) {
+  return date instanceof Date && !isNaN(date.getTime());
+}
 
 const parseText = (input: string): Entry[] => {
   let parsed: string | string[] = input;
@@ -28,15 +27,16 @@ const parseText = (input: string): Entry[] => {
   {
     let i = 0;
     while (i <= parsed.length - 1) {
-      const date = new Date(`
+      let date: Date | string = new Date(`
       ${new Date().getFullYear()}-${parsed[i]
         .split(",")[0]
         .split("/")
         .reverse()
         .join("-")}
-       18:00:00`)
-        .toISOString()
-        .split("T")[0];
+       18:00:00`);
+      date = isValidDateObject(date)
+        ? date.toISOString().split("T")[0]
+        : "error";
       const content: string[] = parsed[i + 1]
         .trim()
         .split(":")[1]
@@ -68,6 +68,14 @@ export type Entry = {
 export default function App() {
   const [state, setState] = useState<null | Entry[]>(null);
   const [input, setInput] = useState<string>("");
+  const [isRunningClient, setRunningClient] = useState(false);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      setRunningClient(true);
+      navigator.serviceWorker.register("./sw.js");
+    }
+  }, []);
 
   return (
     <IconContext.Provider
@@ -85,22 +93,38 @@ export default function App() {
           .map((line) => line.trim())
           .join("\n")}
         onChange={({ currentTarget }) => setInput(currentTarget.value)}
-        className="textarea textarea-bordered w-1/2 max-w-full"
+        onClick={({ detail }) => detail === 2 && setInput(sample_text)}
+        className="textarea textarea-bordered w-full md:w-4/5 lg:w-1/2 max-w-full"
         rows={10}
       ></textarea>
-      <div className="flex gap-2">
-        <button
-          onClick={() => setState(parseText(input))}
-          className="btn gap-2"
-        >
-          Convert to table
-          <TableIcon />
-        </button>
+      <div className={`swap ${state === null ? "" : "swap-active"}`}>
+        <div className="swap-off flex flex-row gap-4">
+          {isRunningClient && navigator?.clipboard && (
+            <button
+              onClick={() =>
+                navigator.clipboard
+                  .readText()
+                  .then((clipText) => setInput(clipText))
+              }
+              className="btn btn-primary gap-2"
+            >
+              Paste
+              <PasteIcon />
+            </button>
+          )}
+          <button
+            onClick={() => setState(parseText(input))}
+            className="btn gap-2"
+          >
+            Convert to table
+            <TableIcon />
+          </button>
+        </div>
         <button
           onClick={() => (setState(null), setInput(""))}
-          className={`btn btn-error gap-2 ${state === null ? "hidden" : ""}`}
+          className="btn btn-error gap-2 swap-on"
         >
-          Clear
+          Start again
           <ClearIcon />
         </button>
       </div>
