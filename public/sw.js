@@ -1,4 +1,4 @@
-const cacheVersion = "1.0.2";
+const cacheVersion = "2.1";
 const cachePrefix = "excel-gen";
 const cacheStore = `${cachePrefix}-${cacheVersion}`;
 
@@ -8,6 +8,7 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(
     fromNetwork(e.request, 10000).catch(() => fromCache(e.request))
   );
+  e.waitUntil(update(e.request));
 });
 
 self.addEventListener("activate", (e) => {
@@ -32,8 +33,8 @@ const fromNetwork = (request, timeout) =>
     const timeoutId = setTimeout(reject, timeout);
     fetch(request).then((response) => {
       clearTimeout(timeoutId);
-      !request.url.startsWith("chrome") && update(request, response.clone());
       fulfill(response);
+      !request.url.startsWith("chrome") && update(request, response.clone());
     }, reject);
   });
 
@@ -44,6 +45,10 @@ const fromCache = (request) =>
     .then((cache) => cache.match(request).then((matching) => matching));
 
 const update = (request, response) =>
-  caches.open(cacheStore).then((cache) => {
-    response && cache.put(request, response);
-  });
+  caches
+    .open(cacheStore)
+    .then((cache) =>
+      {
+        response && cache.put(request, response)
+      }
+    );

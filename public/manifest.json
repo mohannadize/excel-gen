@@ -1,6 +1,6 @@
 {
-  "name": "Patients to Excel",
-  "short_name": "Patient to Excel",
+  "name": "Patients Manager",
+  "short_name": "Patients Manager",
   "icons": [
     {
       "src": "./favicon.ico",

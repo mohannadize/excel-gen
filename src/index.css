@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  /*background-color: #e5e5f7;
+  background-size: 10px 10px;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #444cf733 0,
+    #444cf733 1px,
+    #e5e5f733 0,
+    #e5e5f733 50%
+  )*/;
+}
+
+.font-main {
+  font-family: Poppins;
+}
+
+.btn.btn-excel {
+  @apply bg-emerald-600 text-white border-transparent focus:outline-emerald-600 focus:bg-emerald-700 hover:bg-emerald-700;
+}
+
+.font-sans {
+  font-family: Tajawal, Inter, sans-serif;
+}
+
+.font-serif {
+  font-family: Tajawal;
+}
