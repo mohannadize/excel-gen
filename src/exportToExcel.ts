@@ -10,7 +10,7 @@ export default async function exportToExcel(data: Patient[], title: Document["ti
         Date: entry.date,
         "Patient Name": entry.name,
         "Case Description": entry.desc,
-        "Doctor Name": entry.name,
+        "Doctor Name": entry.doctor,
       };
     })
   );
